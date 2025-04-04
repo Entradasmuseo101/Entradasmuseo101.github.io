@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="./Css/style.css">
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script> 
+    <title>Compra de Entradas</title>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-dark bg-dark fixed-top navbar-expand-lg">
+        <div class="container d-flex align-items-center justify-content-between">
+            <!-- Logo y título -->
+            <a class="navbar-brand d-flex align-items-center">
+                <img src="img/logo.png" alt="Logo" width="50px" class="me-2">
+                <span class="fs-5 fw-bold text-black">Compra tus Entradas</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Espaciado para evitar solapamiento con el navbar -->
+    <div class="mt-5"></div>
+
+    <!-- Texto del valor del ticket -->
+    <header class="text-center my-4">
+        <h1 class="fs-4 fw-bold">Valor del Ticket: $20.000</h1>
+    </header>
+
+    <!-- Contenido principal -->
+    <section class="container">
+        <form id="ticketForm" class="row g-3">
+            <div class="col-12">
+                <label for="personCount" class="form-label">Número de Personas</label>
+                <input type="number" class="form-control" id="personCount" min="1" value="1" placeholder="Cantidad">
+            </div>
+            <div class="alert alert-primary" role="alert" id="totalPayment">
+                Total a pagar: $0
+            </div>
+            <div class="d-flex gap-2"> 
+                <button type="button" id="scheduleButton" class="btn btn-success btn-sm">Continuar</button>
+                <a href="index.html"  id="clearButton" class="btn btn-danger btn-sm">Cancelar</a>  <!-- Botón de cancelar -->
+            </div>
+            
+        </form>
+    </section>
+
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scheduleModalLabel">Seleccionar Horario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="preloader" class="oculto">
+                        <div class="spinner"></div>
+                        <p>Cargando...</p>
+                    </div>
+                    <div id="mesesContainer"></div>
+                    <div id="diasContainer" class="oculto">
+                        <h2 id="tituloMes"></h2>
+                        <div id="diasGrid"></div>
+                    </div>
+                    <div id="horasContainer" class="oculto">
+                        <h2 id="tituloDia"></h2>
+                        <div id="horasGrid"></div>
+                    </div>
+                    <div id="horariosSeleccionados">
+                        <h2>Horarios Seleccionados</h2>
+                        <ul id="listaSeleccionados"></ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" id="loginModalButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal">Continuar </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para Login -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="https://formsubmit.co/ppagina308@gmail.com" method="POST" id="bookingForm">
+                        <h2>Complete el Formulario</h2>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nombre del Titular de la Cuenta</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Tu nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Tu correo" required>
+                        </div>
+                        
+                        <!-- Campos ocultos con los datos dinámicos -->
+                        <input type="hidden" id="hiddenPersonCount" name="Cantidad de Personas">
+                        <input type="hidden" id="hiddenTotalPayment" name="Valor a Pagar">
+                        <input type="hidden" id="hiddenSchedule" name="Fecha y Hora Seleccionada">
+                        <input type="hidden" id="hiddenConfirmationLink" name="Mensaje adicional">
+                        
+                        <!-- Mostrar información al usuario -->
+                        <div class="alert alert-info">
+                            <p><strong>Cantidad de Personas:</strong> <span id="displayPersonCount">0</span></p>
+                            <p><strong>Total a Pagar:</strong> $<span id="displayTotalPayment">0</span></p>
+                            <p><strong>Fecha y Hora Seleccionada:</strong> <span id="displaySchedule">No seleccionado</span></p>
+                        </div>
+                        
+                        <!-- Campo oculto para redirigir al usuario a una página de agradecimiento -->
+                        <input type="hidden" name="_next" value="https://innovention.us">
+                        
+                        <button type="submit" class="btn btn-primary w-100">Enviar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    document.getElementById("bookingForm").addEventListener("submit", function () {
+        const email = document.getElementById("email").value;
+        const confirmLink = `https://innovention.us/confirmacion?email=${encodeURIComponent(email)}`;
+        document.getElementById("hiddenConfirmationLink").value = `Haz clic en el siguiente botón para confirmar tu pago: ${confirmLink}`;
+    });
+    </script>
+    
+
+    
+    <script src="./js/java.js"></script>
+</body>
+</html>
