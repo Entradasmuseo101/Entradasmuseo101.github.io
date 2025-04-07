@@ -161,13 +161,25 @@ mostrarMeses();
 
 // Actualizar cantidad de personas y total a pagar
 function updateTotal() {
+    const personCountInput = document.getElementById("personCount");
+    const hiddenPersonCount = document.getElementById("hiddenPersonCount");
+    const hiddenTotalPayment = document.getElementById("hiddenTotalPayment");
+    const displayPersonCount = document.getElementById("displayPersonCount");
+    const displayTotalPayment = document.getElementById("displayTotalPayment");
+    const qrMonto = document.getElementById("qrMonto"); // Por si necesitas actualizarlo también
+    const totalPaymentAlert = document.getElementById("totalPayment");
+
+    const price = 20000;
     const personCount = parseInt(personCountInput.value) || 0;
     const total = personCount * price;
+    const totalFormatted = total.toLocaleString();
 
-    hiddenPersonCount.value = personCount;
-    hiddenTotalPayment.value = total;
-    displayPersonCount.textContent = personCount;
-    displayTotalPayment.textContent = total;
+    if (hiddenPersonCount) hiddenPersonCount.value = personCount;
+    if (hiddenTotalPayment) hiddenTotalPayment.value = `$${totalFormatted}`;
+    if (displayPersonCount) displayPersonCount.textContent = personCount;
+    if (displayTotalPayment) displayTotalPayment.textContent = totalFormatted;
+    if (qrMonto) qrMonto.textContent = `$${totalFormatted}`;
+    if (totalPaymentAlert) totalPaymentAlert.textContent = `Total a pagar: $${totalFormatted}`;
 }
 
 personCountInput.addEventListener('input', updateTotal);
@@ -329,4 +341,31 @@ document.addEventListener('DOMContentLoaded', () => {
     mostrarMeses();
 });
 
+const config = window.configuracionActual;
+
+if (config) {
+const fechaInicio = new Date(config.fechaInicio);
+const fechaFin = new Date(config.fechaFin);
+const horaApertura = config.horaApertura;
+const horaCierre = config.horaCierre;
+const intervalo = config.intervaloMinutos;
+
+  // Luego generas dinámicamente los días y horas con estos datos
+  // Ejemplo para generación de horarios:
+const horasDisponibles = [];
+const [hA, mA] = horaApertura.split(":").map(Number);
+const [hC, mC] = horaCierre.split(":").map(Number);
+  const aperturaMinutos = hA * 60 + mA;
+  const cierreMinutos = hC * 60 + mC;
+
+for (let min = aperturaMinutos; min <= cierreMinutos; min += intervalo) {
+    const hora = Math.floor(min / 60).toString().padStart(2, '0');
+    const minuto = (min % 60).toString().padStart(2, '0');
+    horasDisponibles.push(`${hora}:${minuto}`);
+}
+
+  // Aquí puedes llenar el contenedor con los botones u opciones de hora
+console.log(horasDisponibles);
+}
+    
 
