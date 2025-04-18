@@ -1,0 +1,115 @@
+/* Asegura que el html y body ocupen toda la altura */
+html, body {
+    height: 100%;
+    margin: 0; /* Eliminar márgenes */
+}
+
+/* Fondo */
+#fondo {
+    background-image: url('/img/login.jpg'); /* URL de la imagen */
+    background-position: center;
+    background-size: cover;
+    background-attachment: no-repeat;
+    height: 100%; /* Asegura que el fondo ocupe toda la altura */
+}
+
+/* Contenedor para centrar el formulario */
+.container {
+    display: flex;
+    justify-content: center; /* Centrado horizontal */
+    align-items: flex-start; /* Alineación al inicio (arriba) */
+    height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
+    width: 100%; /* Asegura que ocupe toda la anchura */
+    padding-top: 50px; /* Añade un pequeño espacio desde la parte superior */
+}
+
+/* Estilo para el formulario */
+.formulario {
+    width: 300px; /* Ancho más pequeño */
+    height: 340px; /* Altura ajustada */
+    background-color: rgba(104, 124, 136, 0.26);
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid white; /* Borde blanco y sutil */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    display: flex;
+    flex-direction: column; /* Organiza los elementos del formulario en columna */
+    justify-content: flex-start; /* Alineación hacia arriba */
+    align-items: center; /* Centra todo el contenido dentro del formulario */
+}
+
+/* Estilo para el título */
+h2.mb-4 {
+    margin-bottom: 20px; /* Ajusté el espacio entre el título y el campo de correo */
+    font-size: 28px; /* Aumenté el tamaño del título */
+    text-align: center; /* Centrado del título */
+}
+
+/* Estilo para los campos de texto y sus etiquetas */
+.mb-3 {
+    margin-bottom: 15px; /* Ajusté el espacio entre los campos */
+    display: flex;
+    flex-direction: column; /* Apila la etiqueta y el campo de entrada */
+    width: 80%; /* Reducido el ancho de los campos */
+    align-items: center; /* Centra los elementos dentro del campo */
+}
+
+/* Etiquetas de los campos */
+label {
+    font-size: 16px; /* Aumenté un poco el tamaño de la etiqueta */
+    margin-bottom: 5px; /* Espacio entre la etiqueta y el campo */
+    text-align: center; /* Centra la etiqueta */
+    width: 100%; /* Hace que la etiqueta ocupe todo el ancho disponible */
+}
+
+/* Estilo para los campos de entrada */
+input[type="email"], input[type="password"] {
+    width: 100%; /* Los campos ocupan todo el ancho disponible del contenedor */
+    padding: 10px; /* Espaciado interno */
+    margin-top: 5px; /* Espacio entre la etiqueta y el campo */
+    border-radius: 5px; /* Bordes redondeados */
+    border: 1px solid #ccc; /* Borde suave */
+    max-width: 280px; /* Establece un ancho máximo para los campos */
+}
+
+/* Estilo para el botón */
+button[type="submit"] {
+    background-color: #007bff; /* Color personalizado */
+    color: white; /* Texto blanco */
+    border: none; /* Eliminar el borde predeterminado */
+    padding: 8px 15px; /* Tamaño más pequeño */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cambio de cursor */
+    width: 150px; /* Hacer el botón un poco más pequeño */
+    margin-top: 20px; /* Espacio superior */
+    text-align: center; /* Centrado del texto dentro del botón */
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3; /* Color al pasar el ratón por encima */
+    transition: background-color 0.3s ease; /* Efecto suave al cambiar el color */
+}
+
+/* Estilo para el contenedor de la contraseña */
+.password-container {
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    display: flex;
+    justify-content: center; /* Centra el contenido dentro del contenedor */
+}
+
+/* Estilo para el grupo de entrada de contraseña con el ojo */
+.input-group {
+    display: flex;
+    align-items: center;
+    width: 100%; /* Asegura que el contenedor ocupe el 100% del ancho */
+}
+
+/* Estilo para el campo de la contraseña */
+.input-group input[type="password"] {
+    width: 100%; /* El campo de entrada ocupa el 100% del ancho */
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    max-width: 280px; /* Establece un ancho máximo para el campo */
+}
