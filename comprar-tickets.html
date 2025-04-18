@@ -1,179 +1,252 @@
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <link rel="stylesheet" href="./Css/style.css">
-        <script src="https://cdn.emailjs.com/dist/email.min.js"></script> 
-        <title>Compra de Entradas</title>
-    </head>
-    <body>
-        <!-- Barra de navegación -->
-        <nav class="navbar navbar-dark bg-dark fixed-top navbar-expand-lg">
-            <div class="container d-flex align-items-center justify-content-between">
-                <!-- Logo y título -->
-                <a class="navbar-brand d-flex align-items-center">
-                    <img src="img/logo.png" alt="Logo" width="50px" class="me-2">
-                    <span class="fs-5 fw-bold text-black">Compra tus Entradas</span>
-                </a>
-                <a href="comprar-tickets.html" class="btn-admin">Admin</a>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="./Css/style.css">
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script> 
+    <title>Compra de Entradas</title>
+</head>
+<body>
+    <link rel="stylesheet" href="./Css/style.css">
+    <title>Compra de Entradas</title>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-dark bg-dark fixed-top navbar-expand-lg">
+        <div class="container d-flex align-items-center justify-content-between">
+            <!-- Logo y título -->
+            <a class="navbar-brand d-flex align-items-center">
+                <img src="img/logo.png" alt="Logo" width="50px" class="me-2">
+                <span class="fs-5 fw-bold text-black">Compra tus Entradas</span>
+            </a>
+            <a href="login.html" class="btn-admin">Admin</a>
 
-            </div>
-        </nav>
-
-        <!-- Espaciado para evitar solapamiento con el navbar -->
-        <div class="mt-5"></div>
-
-        <!-- Texto del valor del ticket -->
-        <header class="text-center my-4">
-            <h1 class="fs-4 fw-bold">Valor del Ticket: $20.000</h1>
-        </header>
-
-        <!-- Contenido principal -->
-        <section class="container">
-            <form id="ticketForm" class="row g-3">
-                <div class="col-12">
-                    <label for="personCount" class="form-label">Número de Personas</label>
-                    <input type="number" class="form-control" id="personCount" min="1" value="1" placeholder="Cantidad">
-                </div>
-                <div class="alert alert-primary" role="alert" id="totalPayment">
-                    Total a pagar: $0
-                </div>
-                <div class="d-flex gap-2"> 
-                    <button type="button" id="scheduleButton" class="btn btn-success btn-sm">Continuar</button>
-                    <a href="index.html"  id="clearButton" class="btn btn-danger btn-sm">Cancelar</a>  <!-- Botón de cancelar -->
-                </div>
-                
-            </form>
-        </section>
-
-        <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="scheduleModalLabel">Seleccionar Horario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="preloader" class="oculto">
-                            <div class="spinner"></div>
-                            <p>Cargando...</p>
-                        </div>
-                        <div id="mesesContainer"></div>
-                        <div id="diasContainer" class="oculto">
-                            <h2 id="tituloMes"></h2>
-                            <div id="diasGrid"></div>
-                        </div>
-                        <div id="horasContainer" class="oculto">
-                            <h2 id="tituloDia"></h2>
-                            <div id="horasGrid"></div>
-                        </div>
-                        <div id="horariosSeleccionados">
-                            <h2>Horarios Seleccionados</h2>
-                            <ul id="listaSeleccionados"></ul>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                        <button type="button" id="loginModalButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#paymentInfoModal">Continuar</button>
-                        
-                    </div>
-                </div>
-            </div>
         </div>
-        
-    <!-- Modal de Información de Pago -->
-    <div class="modal fade" id="paymentInfoModal" tabindex="-1" aria-labelledby="paymentInfoModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="paymentInfoModalLabel">Información de Pago</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    </nav>
+
+    <!-- Espaciado para evitar solapamiento con el navbar -->
+    <div class="mt-5"></div>
+
+    <!-- Texto del valor del ticket -->
+    <script>
+const config = JSON.parse(localStorage.getItem('configuracion')) || {};
+const globalConfig = config.global || {};
+const price = parseInt(globalConfig.precioEntrada) || 20000;
+const maxPersonas = parseInt(globalConfig.maxPersonas) || 10;
+
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("cantidadEntradas");
+    const totalPago = document.getElementById("totalPago");
+    const displayPersonCount = document.getElementById("displayPersonCount");
+    const displayTotalPayment = document.getElementById("displayTotalPayment");
+    const qrMonto = document.getElementById("qrMonto");
+
+    function actualizarTotal() {
+        const cantidad = parseInt(input.value) || 0;
+        let personas = cantidad;
+        if (cantidad > maxPersonas) {
+            personas = maxPersonas;
+            input.value = maxPersonas;
+        }
+
+        const total = personas * price;
+        totalPago.textContent = total.toLocaleString("es-CO");
+
+        if (displayPersonCount) {
+            displayPersonCount.textContent = personas;
+        }
+        if (displayTotalPayment) {
+            displayTotalPayment.textContent = total.toLocaleString("es-CO");
+        }
+        if (qrMonto) {
+            qrMonto.textContent = `$${total.toLocaleString("es-CO")}`;
+        }
+    }
+
+    input.addEventListener("input", actualizarTotal);
+    actualizarTotal(); // cálculo inicial
+});
+
+// Puedes usar price y maxPersonas como desees
+</script>
+
+    <!-- Contenido principal -->
+    <section class="container">
+        <form id="ticketForm" class="row g-3">
+            <div class="mb-3">
+                <label for="cantidadEntradas" class="form-label">Cantidad de Entradas</label>
+                <input type="number" class="form-control" id="cantidadEntradas" value="1" min="1">
             </div>
-            <div class="modal-body text-center">
-                <img src="img/Qr.jpg" alt="Código QR de Pago" class="img-fluid mb-3" style="max-width: 250px;">
-                
-                <!-- Monto a pagar -->
-                <div class="mb-3">
-                    <h6 class="mb-1">Monto a Pagar:</h6>
-                    <p id="qrMonto" class="fw-bold text-success fs-5">$0</p>
-                </div>
+            <p><strong>Total a pagar: $<span id="totalPago">0</span></strong></p>
+            <button type="button" class="btn btn-primary" id="scheduleButton">Continuar</button>
+
+
+                <a href="index.html"  id="clearButton" class="btn btn-danger btn-sm">Cancelar</a>  <!-- Botón de cancelar -->
+            </div>
             
-                <div class="mb-2">
-                    <h6 class="mb-1">Cuenta Bancolombia:</h6>
-                    <p class="fw-bold">103-524020-59</p>
+        </form>
+    </section>
+            
+        </form>
+    </section>
+
+    <div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="scheduleModalLabel">Seleccionar Horario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="mb-2">
-                    <h6 class="mb-1">Cuenta Nequi:</h6>
-                    <p class="fw-bold">312 8405570</p>
+                <div class="modal-body">
+                    <div id="preloader" class="oculto">
+                        <div class="spinner"></div>
+                        <p>Cargando...</p>
+                    </div>
+                    <div id="mesesContainer"></div>
+                    <div id="diasContainer" class="oculto">
+                        <h2 id="tituloMes"></h2>
+                        <div id="diasGrid"></div>
+                    </div>
+                    <div id="horasContainer" class="oculto">
+                        <h2 id="tituloDia"></h2>
+                        <div id="horasGrid"></div>
+                    </div>
+                    <div id="horariosSeleccionados">
+                        <h2>Horarios Seleccionados</h2>
+                        <ul id="listaSeleccionados"></ul>
+                    </div>
                 </div>
-                <p class="text-muted">Realiza el pago y luego haz clic en continuar para llenar el formulario.</p>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" id="loginModalButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#paymentInfoModal">Continuar</button>
+                    
+                </div>
             </div>
-            <button type="button" class="btn btn-primary w-100" data-bs-target="#loginModal" data-bs-toggle="modal" data-bs-dismiss="modal">Ya pagué, continuar</button>
-        </div>
         </div>
     </div>
     
+<!-- Modal de Información de Pago -->
+<div class="modal fade" id="paymentInfoModal" tabindex="-1" aria-labelledby="paymentInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title" id="paymentInfoModalLabel">Información de Pago</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body text-center">
+            <img src="img/Qr.jpg" alt="Código QR de Pago" class="img-fluid mb-3" style="max-width: 250px;">
+            
+            <!-- Monto a pagar -->
+            <div class="mb-3">
+                <h6 class="mb-1">Monto a Pagar:</h6>
+                <p id="qrMonto" class="fw-bold text-success fs-5">$0</p>
+            </div>
+        
+            <div class="mb-2">
+                <h6 class="mb-1">Cuenta Bancolombia:</h6>
+                <p class="fw-bold">103-524020-59</p>
+            </div>
+            <div class="mb-2">
+                <h6 class="mb-1">Cuenta Nequi:</h6>
+                <p class="fw-bold">312 8405570</p>
+            </div>
+            <p class="text-muted">Realiza el pago y luego haz clic en continuar para llenar el formulario.</p>
+        </div>
+        <button type="button" class="btn btn-primary w-100" data-bs-target="#loginModal" data-bs-toggle="modal" data-bs-dismiss="modal">Ya pagué, continuar</button>
+    </div>
+    </div>
+</div>
 
-        <!-- Modal para Login -->
-        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="https://formsubmit.co/ppagina308@gmail.com" method="POST" id="bookingForm">
-                            <h2>Complete el Formulario</h2>
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nombre del Titular de la Cuenta</label>
-                                <input type="text" class="form-control" id="name" name="name" placeholder="Tu nombre" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Correo Electrónico</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Tu correo" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="comprobante" class="form-label">Comprobante de Pago</label>
-                                <input type="number" class="form-control" id="comprobante" name="comprobante" placeholder="Número del comprobante" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="horaPago" class="form-label">Hora de Pago</label>
-                                <input type="time" class="form-control" id="horaPago" name="horaPago" required>
-                            </div>
-                            
-                            
-                            <!-- Campos ocultos con los datos dinámicos -->
-                            <input type="hidden" id="hiddenPersonCount" name="Cantidad de Personas">
-                            <input type="hidden" id="hiddenTotalPayment" name="Valor a Pagar">
-                            <input type="hidden" id="hiddenSchedule" name="Fecha y Hora Seleccionada">
-                            <input type="hidden" id="hiddenConfirmationLink" name="Mensaje adicional">
-                            
-                            <!-- Mostrar información al usuario -->
-                            <div class="alert alert-info">
-                                <p><strong>Cantidad de Personas:</strong> <span id="displayPersonCount">0</span></p>
-                                <p><strong>Total a Pagar:</strong> $<span id="displayTotalPayment">0</span></p>
-                                <p><strong>Fecha y Hora Seleccionada:</strong> <span id="displaySchedule">No seleccionado</span></p>
-                            </div>
-                            
-                            <!-- Campo oculto para redirigir al usuario a una página de agradecimiento -->
-                            <input type="hidden" name="_next" value="https://entradasmuseo101.github.io/">
-                            
-                            <button type="submit" class="btn btn-primary w-100">Enviar</button>
-                        </form>
-                    </div>
+
+    <!-- Modal para Login -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="https://formsubmit.co/ppagina308@gmail.com" method="POST" id="bookingForm">
+                        <h2>Complete el Formulario</h2>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nombre del Titular de la Cuenta</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Tu nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="emailUsuario" name="email" placeholder="Tu correo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comprobante" class="form-label">Comprobante de Pago</label>
+                            <input type="number" class="form-control" id="comprobante" name="comprobante" placeholder="Número del comprobante" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="horaPago" class="form-label">Hora de Pago</label>
+                            <input type="time" class="form-control" id="horaPago" name="horaPago" required>
+                        </div>
+                        
+                        
+                        
+                        <input type="hidden" id="hiddenPersonCount" name="Cantidad de Personas">
+                        <input type="hidden" id="hiddenTotalPayment" name="Valor a Pagar">
+                        <input type="hidden" id="hiddenSchedule" name="Fecha y Hora Seleccionada">
+                        
+                        <!-- Mostrar información al usuario -->
+                        <div class="alert alert-info">
+                            <p><strong>Cantidad de Personas:</strong> <span id="displayPersonCount">0</span></p>
+                            <p><strong>Total a Pagar:</strong> $<span id="displayTotalPayment">0</span></p>
+                            <p><strong>Fecha y Hora Seleccionada:</strong> <span id="displaySchedule">No seleccionado</span></p>
+                        </div>
+                        
+                        <!-- Campo oculto para redirigir al usuario a una página de agradecimiento -->
+                        <input type="hidden" name="_next" value="https://entradasmuseo101.github.io/">
+                        
+                        <button type="submit" class="btn btn-primary w-100">Enviar</button>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cantidadInput = document.getElementById("cantidadEntradas");
+            const price = parseInt(localStorage.getItem("configuracion") ? JSON.parse(localStorage.getItem("configuracion")).global.precioEntrada : 20000);
         
-    
+            const continueToLogin = document.getElementById("loginModalButton");
         
+            continueToLogin.addEventListener("click", () => {
+                const cantidad = parseInt(cantidadInput.value) || 0;
+                const total = cantidad * price;
         
-        <script src="./js/java.js"></script>
-    </body>
-    </html>
+                // Mostrar al usuario
+                document.getElementById("displayPersonCount").textContent = cantidad;
+                document.getElementById("displayTotalPayment").textContent = total.toLocaleString("es-CO");
+        
+                // Enviar por email (formsubmit)
+                document.getElementById("hiddenPersonCount").value = cantidad;
+                document.getElementById("hiddenTotalPayment").value = total;
+        
+                // Copiar al correo del usuario
+                const userEmail = document.getElementById("emailUsuario").value;
+                document.getElementById("copyToUser").value = userEmail;
+                document.getElementById("formulario").addEventListener("submit", function(event) {
 
+});
+            });
+        });
+        
+        </script>
+        
+
+        
+
+    
+    
+    <script src="./js/java.js"></script>
+</body>
+</html>
