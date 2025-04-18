@@ -1,371 +1,293 @@
-const personCountInput = document.getElementById('personCount');
-const totalPaymentDisplay = document.getElementById('totalPayment');
-const hiddenPersonCount = document.getElementById('hiddenPersonCount');
-const hiddenTotalPayment = document.getElementById('hiddenTotalPayment');
-const displayPersonCount = document.getElementById('displayPersonCount');
-const displayTotalPayment = document.getElementById('displayTotalPayment');
 
-const hiddenSchedule = document.getElementById('hiddenSchedule');
-const displaySchedule = document.getElementById('displaySchedule');
+    document.addEventListener('DOMContentLoaded', function () {
+        const personCountInput = document.getElementById('personCount');
+        const totalPaymentDisplay = document.getElementById('totalPayment');
+        const hiddenPersonCount = document.getElementById('hiddenPersonCount');
+        const hiddenTotalPayment = document.getElementById('hiddenTotalPayment');
+        const displayPersonCount = document.getElementById('displayPersonCount');
+        const displayTotalPayment = document.getElementById('displayTotalPayment');
+        
+    const hiddenSchedule = document.getElementById('hiddenSchedule');
+    const displaySchedule = document.getElementById('displaySchedule');
 
+        
 
-const price = 20000;
-
-// Actualizar total
-function updateTotal() {
-    const personCount = parseInt(personCountInput.value) || 0;
-    const total = personCount * price;
-    totalPaymentDisplay.textContent = `Total a pagar: $${total}`;
-}
-
-personCountInput.addEventListener('input', updateTotal);
-
-clearButton.addEventListener('click', () => {
-    document.getElementById('ticketForm').reset();
-    totalPaymentDisplay.textContent = 'Total a pagar: $0';
-});
-
-// Abrir modal para seleccionar horarios
-scheduleButton.addEventListener('click', () => {
-    scheduleModal.show();
-});
-
-// Funciones de horario
-const preloader = document.getElementById('preloader');
-const horariosSeleccionados = {};
-const mesesContainer = document.getElementById('mesesContainer');
-const diasContainer = document.getElementById('diasContainer');
-const diasGrid = document.getElementById('diasGrid');
-const horasContainer = document.getElementById('horasContainer');
-const horasGrid = document.getElementById('horasGrid');
-const listaSeleccionados = document.getElementById('listaSeleccionados');
-const tituloMes = document.getElementById('tituloMes');
-const tituloDia = document.getElementById('tituloDia');
-
-function mostrarConPreloader(callback) {
-    preloader.classList.remove('oculto');
-    setTimeout(() => {
-        callback();
-        preloader.classList.add('oculto');
-    }, 500);
-}
-
-function mostrarMeses() {
-    mesesContainer.innerHTML = '';
-    const hoy = new Date();
-    for (let i = 0; i < 2; i++) {
-        const mesFecha = new Date(hoy.getFullYear(), hoy.getMonth() + i);
-        const mesDiv = document.createElement('div');
-        mesDiv.classList.add('item');
-        mesDiv.textContent = mesFecha.toLocaleString('es', { month: 'long' });
-        mesDiv.addEventListener('click', () => mostrarConPreloader(() => mostrarDias(mesFecha)));
-        mesesContainer.appendChild(mesDiv);
-    }
-}
-
-function mostrarDias(mesFecha) {
-    diasContainer.classList.remove('oculto');
-    diasGrid.innerHTML = '';
-    tituloMes.textContent = `Días de ${mesFecha.toLocaleString('es', { month: 'long' })}`;
-    const primerDia = new Date(mesFecha.getFullYear(), mesFecha.getMonth(), 1);
-    const ultimoDia = new Date(mesFecha.getFullYear(), mesFecha.getMonth() + 1, 0);
-
-    for (let d = 1; d <= ultimoDia.getDate(); d++) {
-        const diaDiv = document.createElement('div');
-        diaDiv.classList.add('item');
-        diaDiv.textContent = d;
-        diaDiv.addEventListener('click', () => mostrarConPreloader(() => mostrarHoras(diaDiv)));
-        diasGrid.appendChild(diaDiv);
-    }
-}
-
-function mostrarHoras(diaDiv) {
-    horasContainer.classList.remove('oculto');
-    horasGrid.innerHTML = '';
-    tituloDia.textContent = `Horas para el día ${diaDiv.textContent}`;
-    const horas = generarHoras();
-
-    horas.forEach(hora => {
-        const horaDiv = document.createElement('div');
-        horaDiv.textContent = hora;
-        horaDiv.classList.add('item');
-        horaDiv.addEventListener('click', () => seleccionarHora(horaDiv));
-        horasGrid.appendChild(horaDiv);
-    });
-}
-
-function generarHoras() {
-    const horas = [];
-    for (let h = 8; h < 18; h++) {
-        for (let m = 0; m < 60; m += 10) {
-            horas.push(`${h}:${m.toString().padStart(2, '0')}`);
+        
+        // Obtener configuración desde localStorage
+        const config = JSON.parse(localStorage.getItem('configuracionEntradas')) || {
+            precioEntrada: 15000,
+            maximoPersonas: 6
+        };
+    
+        // Establecer el máximo dinámico
+        personCountInput.setAttribute('max', config.maximoPersonas);
+    
+        // Actualizar total
+        function updateTotal() {
+            const personCount = parseInt(personCountInput.value) || 0;
+            const total = personCount * config.precioEntrada;
+            totalPaymentDisplay.textContent = `Total a pagar: $${total}`;
+    
+            // Actualizar el monto en el modal
+            const qrMonto = document.getElementById('qrMonto');
+            if (qrMonto) qrMonto.textContent = `$${total}`;
+    
+            // Actualizar los campos ocultos para envío de formulario
+            if (hiddenPersonCount) hiddenPersonCount.value = personCount;
+            if (hiddenTotalPayment) hiddenTotalPayment.value = total;
+            if (displayPersonCount) displayPersonCount.textContent = personCount;
+            if (displayTotalPayment) displayTotalPayment.textContent = `$${total}`;
         }
-    }
-    return horas;
-}
-
-function seleccionarHora(horaDiv) {
-    const horaSeleccionada = horaDiv.textContent;
-
-    // Verificar si ya está seleccionada
-    if (horaDiv.classList.contains('seleccionado')) {
-        if (confirm(`¿Deseas quitar la selección de la hora "${horaSeleccionada}"?`)) {
-            horaDiv.classList.remove('seleccionado');
-            eliminarHoraDeLista(horaSeleccionada);
-        }
-    } else {
-        horaDiv.classList.add('seleccionado');
-        agregarHoraALista(horaSeleccionada);
-    }
-}
-
-// Agregar horario a la lista externa
-function agregarHoraALista(hora) {
-    if (!horariosSeleccionados[hora]) {
-        const li = document.createElement('li');
-        li.textContent = hora;
-        li.id = `hora-${hora.replace(':', '-')}`; // Crear un ID único para el elemento
-
-        const btnEliminar = document.createElement('button');
-        btnEliminar.textContent = 'X';
-        btnEliminar.className = 'btn btn-danger btn-sm ms-2';
-        btnEliminar.addEventListener('click', () => {
-            if (confirm(`¿Deseas eliminar "${hora}" de la lista de seleccionados?`)) {
-                eliminarHoraDeLista(hora);
-                // Desmarcar en el modal
-                const elementosHoras = Array.from(horasGrid.children);
-                elementosHoras.forEach(horaDiv => {
-                    if (horaDiv.textContent === hora) {
-                        horaDiv.classList.remove('seleccionado');
-                    }
-                });
-            }
+    
+        // Inicial
+        updateTotal();
+        personCountInput.addEventListener('input', updateTotal);
+    
+        // Botón de cancelar
+        const clearButton = document.getElementById('clearButton');
+        clearButton.addEventListener('click', () => {
+            document.getElementById('ticketForm').reset();
+            totalPaymentDisplay.textContent = 'Total a pagar: $0';
+            if (hiddenPersonCount) hiddenPersonCount.value = '';
+            if (hiddenTotalPayment) hiddenTotalPayment.value = '';
+            if (displayPersonCount) displayPersonCount.textContent = 0;
+            if (displayTotalPayment) displayTotalPayment.textContent = '$0';
         });
+    });
+    
+    const emailInput = document.getElementById('email');
+const replyToInput = document.getElementById('replyto');
 
-        li.appendChild(btnEliminar);
-        listaSeleccionados.appendChild(li);
-        horariosSeleccionados[hora] = true;
-    }
-}
-
-// Eliminar horario de la lista externa
-function eliminarHoraDeLista(hora) {
-    delete horariosSeleccionados[hora];
-    const li = document.getElementById(`hora-${hora.replace(':', '-')}`);
-    if (li) {
-        listaSeleccionados.removeChild(li);
-    }
-}
-
-mostrarMeses();
-
-// Actualizar cantidad de personas y total a pagar
-function updateTotal() {
-    const personCountInput = document.getElementById("personCount");
-    const hiddenPersonCount = document.getElementById("hiddenPersonCount");
-    const hiddenTotalPayment = document.getElementById("hiddenTotalPayment");
-    const displayPersonCount = document.getElementById("displayPersonCount");
-    const displayTotalPayment = document.getElementById("displayTotalPayment");
-    const qrMonto = document.getElementById("qrMonto"); // Por si necesitas actualizarlo también
-    const totalPaymentAlert = document.getElementById("totalPayment");
-
-    const price = 20000;
-    const personCount = parseInt(personCountInput.value) || 0;
-    const total = personCount * price;
-    const totalFormatted = total.toLocaleString();
-
-    if (hiddenPersonCount) hiddenPersonCount.value = personCount;
-    if (hiddenTotalPayment) hiddenTotalPayment.value = `$${totalFormatted}`;
-    if (displayPersonCount) displayPersonCount.textContent = personCount;
-    if (displayTotalPayment) displayTotalPayment.textContent = totalFormatted;
-    if (qrMonto) qrMonto.textContent = `$${totalFormatted}`;
-    if (totalPaymentAlert) totalPaymentAlert.textContent = `Total a pagar: $${totalFormatted}`;
-}
-
-personCountInput.addEventListener('input', updateTotal);
-updateTotal(); // Ejecutar para inicializar los valores
-
-// Función para actualizar el horario seleccionado
-function actualizarHorarioSeleccionado() {
-    let horarios = [];
-    const items = listaSeleccionados.querySelectorAll('li');
-    items.forEach(item => {
-        horarios.push(item.textContent.replace(' X', ''));
+if (emailInput && replyToInput) {
+    emailInput.addEventListener('input', () => {
+        replyToInput.value = emailInput.value;
     });
 
-    const horarioTexto = horarios.length > 0 ? horarios.join(', ') : 'No seleccionado';
-    hiddenSchedule.value = horarioTexto;
-    displaySchedule.textContent = horarioTexto;
+    document.getElementById('loginModalButton').addEventListener('click', function() {
+        // Obtener los valores dinámicos
+        const totalPago = document.getElementById('totalPago').textContent;
+        const cantidadEntradas = document.getElementById('cantidadEntradas').value;
+    
+        // Actualizar los campos ocultos con los valores
+        document.getElementById('hiddenPersonCount').value = cantidadEntradas;
+        document.getElementById('hiddenTotalPayment').value = totalPago;
+    
+        // Si deseas también enviar la fecha y hora seleccionada, actualiza el campo correspondiente
+        const selectedSchedule = document.getElementById('displaySchedule').textContent;
+        document.getElementById('hiddenSchedule').value = selectedSchedule;
+    });
+    
 }
 
-// Observador de cambios en la lista de horarios seleccionados
-const observer = new MutationObserver(actualizarHorarioSeleccionado);
-observer.observe(listaSeleccionados, { childList: true });
 
-actualizarHorarioSeleccionado(); // Ejecutar inicialmente para capturar cambios previos
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Obtener referencias de los elementos
+
+    // Abrir modal para seleccionar horarios
     const scheduleButton = document.getElementById('scheduleButton');
-    const scheduleModalElement = document.getElementById('scheduleModal');
+    const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
 
-    if (!scheduleButton || !scheduleModalElement) {
-        console.error("No se encontró el botón o el modal de horarios.");
-        return;
-    }
+    const preloader = document.getElementById('preloader');
+    const mesesContainer = document.getElementById('mesesContainer');
+    const diasContainer = document.getElementById('diasContainer');
+    const diasGrid = document.getElementById('diasGrid');
+    const horasContainer = document.getElementById('horasContainer');
+    const horasGrid = document.getElementById('horasGrid');
+    const listaSeleccionados = document.getElementById('listaSeleccionados');
+    const tituloMes = document.getElementById('tituloMes');
+    const tituloDia = document.getElementById('tituloDia');
 
-    // Inicializar el modal de Bootstrap correctamente
-    const scheduleModal = new bootstrap.Modal(scheduleModalElement);
+    let fechaSeleccionada = null;
 
-    // Evento de clic para abrir el modal
     scheduleButton.addEventListener('click', () => {
+        mostrarMeses();
         scheduleModal.show();
     });
-});
-document.addEventListener('DOMContentLoaded', () => {
-    const listaSeleccionados = document.getElementById('listaSeleccionados');
-
-    if (!listaSeleccionados) {
-        console.error("El elemento #listaSeleccionados no se encontró en el DOM.");
-        return;
-    }
-
-    // Variables para almacenar selección
-    let mesSeleccionado = "";
-    let diaSeleccionado = "";
 
     function mostrarMeses() {
         mesesContainer.innerHTML = '';
+        diasContainer.classList.add('oculto');
+        horasContainer.classList.add('oculto');
+
         const hoy = new Date();
-        for (let i = 0; i < 2; i++) {
-            const mesFecha = new Date(hoy.getFullYear(), hoy.getMonth() + i);
+        for (let i = 0; i <= 2; i++) {
+            const mesFecha = new Date(hoy.getFullYear(), hoy.getMonth() + i, 1);
             const mesDiv = document.createElement('div');
             mesDiv.classList.add('item');
             mesDiv.textContent = mesFecha.toLocaleString('es', { month: 'long' });
+
             mesDiv.addEventListener('click', () => {
-                mesSeleccionado = mesFecha.toLocaleString('es', { month: 'long' });
-                mostrarConPreloader(() => mostrarDias(mesFecha));
+                mostrarDias(mesFecha);
             });
+
             mesesContainer.appendChild(mesDiv);
         }
     }
 
     function mostrarDias(mesFecha) {
-        diasContainer.classList.remove('oculto');
         diasGrid.innerHTML = '';
-        tituloMes.textContent = `Días de ${mesFecha.toLocaleString('es', { month: 'long' })}`;
-        const primerDia = new Date(mesFecha.getFullYear(), mesFecha.getMonth(), 1);
-        const ultimoDia = new Date(mesFecha.getFullYear(), mesFecha.getMonth() + 1, 0);
+        diasContainer.classList.remove('oculto');
+        horasContainer.classList.add('oculto');
 
-        for (let d = 1; d <= ultimoDia.getDate(); d++) {
+        const anio = mesFecha.getFullYear();
+        const mes = mesFecha.getMonth();
+        const ultimoDia = new Date(anio, mes + 1, 0).getDate();
+
+        tituloMes.textContent = `Días de ${mesFecha.toLocaleString('es', { month: 'long' })}`;
+
+        const configuraciones = JSON.parse(localStorage.getItem("configuracion") || "{}");
+        const fechaInicio = new Date(configuraciones.fechaInicio || "2000-01-01");
+        const fechaFin = new Date(configuraciones.fechaFin || "2100-12-31");
+
+        for (let dia = 1; dia <= ultimoDia; dia++) {
+            const fecha = new Date(anio, mes, dia);
+            if (fecha < fechaInicio || fecha > fechaFin) continue;
+
             const diaDiv = document.createElement('div');
             diaDiv.classList.add('item');
-            diaDiv.textContent = d;
+            diaDiv.textContent = dia;
+
             diaDiv.addEventListener('click', () => {
-                diaSeleccionado = d;
-                mostrarConPreloader(() => mostrarHoras(diaDiv));
+                fechaSeleccionada = fecha;
+                mostrarHorasParaDia(fechaSeleccionada);
             });
+
             diasGrid.appendChild(diaDiv);
         }
     }
 
-    function mostrarHoras(diaDiv) {
-        horasContainer.classList.remove('oculto');
+    function mostrarHorasParaDia(fecha) {
         horasGrid.innerHTML = '';
-        tituloDia.textContent = `Horas para el día ${diaDiv.textContent} de ${mesSeleccionado}`;
-        const horas = generarHoras();
+        horasContainer.classList.remove('oculto');
+        const fechaKey = fecha.toISOString().split('T')[0];
+        tituloDia.textContent = `Horas disponibles para ${fechaKey}`;
+
+        const configuraciones = JSON.parse(localStorage.getItem("configuracion") || "{}");
+        const configDia = {
+            apertura: (configuraciones[fechaKey]?.apertura) || configuraciones.apertura || "08:00",
+            cierre: (configuraciones[fechaKey]?.cierre) || configuraciones.cierre || "18:00",
+            intervalo: parseInt(configuraciones[fechaKey]?.intervalo || configuraciones.intervalo) || 10
+        };
+
+        const horas = generarHoras(configDia.apertura, configDia.cierre, configDia.intervalo);
+        const selecciones = JSON.parse(localStorage.getItem('seleccionesHorarios') || '{}');
+        const seleccionadas = selecciones[fechaKey] || [];
 
         horas.forEach(hora => {
             const horaDiv = document.createElement('div');
-            horaDiv.textContent = hora;
             horaDiv.classList.add('item');
-            horaDiv.addEventListener('click', () => seleccionarHora(horaDiv));
+            horaDiv.textContent = hora;
+
+            if (seleccionadas.includes(hora)) {
+                horaDiv.classList.add('seleccionado');
+            }
+
+            horaDiv.addEventListener('click', () => {
+                alternarSeleccion(horaDiv, fechaKey);
+            });
+
             horasGrid.appendChild(horaDiv);
         });
     }
 
-    function seleccionarHora(horaDiv) {
-        const horaSeleccionada = horaDiv.textContent;
-        const horarioCompleto = `${diaSeleccionado} de ${mesSeleccionado} - ${horaSeleccionada}`;
+    function generarHoras(inicio, fin, intervaloMin) {
+        const horarios = [];
+        let [h, m] = inicio.split(":").map(Number);
+        const [hf, mf] = fin.split(":").map(Number);
 
-        // Verificar si ya está seleccionada
-        if (horaDiv.classList.contains('seleccionado')) {
-            if (confirm(`¿Deseas quitar la selección de "${horarioCompleto}"?`)) {
-                horaDiv.classList.remove('seleccionado');
-                eliminarHoraDeLista(horarioCompleto);
+        while (h < hf || (h === hf && m < mf)) {
+            horarios.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+            m += intervaloMin;
+            if (m >= 60) {
+                h += Math.floor(m / 60);
+                m = m % 60;
             }
-        } else {
-            horaDiv.classList.add('seleccionado');
-            agregarHoraALista(horarioCompleto);
         }
+
+        return horarios;
     }
 
-    // Agregar horario a la lista externa con día y mes
-    function agregarHoraALista(horario) {
-        if (!horariosSeleccionados[horario]) {
-            const li = document.createElement('li');
-            li.textContent = horario;
-            li.id = `hora-${horario.replace(/\s+/g, '-')}`;
+    function alternarSeleccion(horaDiv, fechaKey) {
+        const hora = horaDiv.textContent;
+        const selecciones = JSON.parse(localStorage.getItem('seleccionesHorarios') || '{}');
+    
+        if (!selecciones[fechaKey]) selecciones[fechaKey] = [];
+    
+        if (horaDiv.classList.contains('seleccionado')) {
+            // Deseleccionar
+            horaDiv.classList.remove('seleccionado');
+            selecciones[fechaKey] = selecciones[fechaKey].filter(h => h !== hora);
+            // Limpiar campos si no hay selección
+            document.getElementById('hiddenSchedule').value = '';
+            document.getElementById('displaySchedule').textContent = 'No seleccionado';
+        } else {
+            // Solo permitir una selección
+            document.querySelectorAll('#horasGrid .item.seleccionado').forEach(el => el.classList.remove('seleccionado'));
+            selecciones[fechaKey] = [hora];
+            horaDiv.classList.add('seleccionado');
+    
+            // Actualizar campos ocultos y visibles
+            const fechaHoraStr = `${fechaKey} a las ${hora}`;
+            document.getElementById('hiddenSchedule').value = fechaHoraStr;
+            document.getElementById('displaySchedule').textContent = fechaHoraStr;
+        }
+    
+        localStorage.setItem('seleccionesHorarios', JSON.stringify(selecciones));
+    }
+    
 
-            const btnEliminar = document.createElement('button');
-            btnEliminar.textContent = 'X';
-            btnEliminar.className = 'btn btn-danger btn-sm ms-2';
-            btnEliminar.addEventListener('click', () => {
-                if (confirm(`¿Deseas eliminar "${horario}" de la lista de seleccionados?`)) {
-                    eliminarHoraDeLista(horario);
-                    // Desmarcar en el modal
-                    const elementosHoras = Array.from(horasGrid.children);
-                    elementosHoras.forEach(horaDiv => {
-                        if (horaDiv.textContent === horario.split(' - ')[1]) {
-                            horaDiv.classList.remove('seleccionado');
-                        }
-                    });
+    function actualizarListaSeleccionados() {
+        const listaSeleccionados = document.getElementById('listaSeleccionados');
+        const displaySchedule = document.getElementById('displaySchedule');
+        const hiddenSchedule = document.getElementById('hiddenSchedule');
+    
+        if (listaSeleccionados) listaSeleccionados.innerHTML = '';
+    
+        const selecciones = JSON.parse(localStorage.getItem('seleccionesHorarios') || '{}');
+        let resumen = [];
+    
+        Object.keys(selecciones).forEach(fecha => {
+            selecciones[fecha].forEach(hora => {
+                const texto = `${fecha} - ${hora}`;
+                resumen.push(texto);
+    
+                if (listaSeleccionados) {
+                    const li = document.createElement('li');
+                    li.textContent = texto;
+    
+                    const btn = document.createElement('button');
+                    btn.textContent = 'X';
+                    btn.classList.add('btn', 'btn-danger', 'btn-sm', 'ms-2');
+                    btn.addEventListener('click', () => eliminarSeleccion(fecha, hora));
+    
+                    li.appendChild(btn);
+                    listaSeleccionados.appendChild(li);
                 }
             });
-
-            li.appendChild(btnEliminar);
-            listaSeleccionados.appendChild(li);
-            horariosSeleccionados[horario] = true;
-        }
-    }
-
-    // Eliminar horario de la lista externa
-    function eliminarHoraDeLista(horario) {
-        delete horariosSeleccionados[horario];
-        const li = document.getElementById(`hora-${horario.replace(/\s+/g, '-')}`);
-        if (li) {
-            listaSeleccionados.removeChild(li);
-        }
-    }
-
-    mostrarMeses();
-});
-
-const config = window.configuracionActual;
-
-if (config) {
-const fechaInicio = new Date(config.fechaInicio);
-const fechaFin = new Date(config.fechaFin);
-const horaApertura = config.horaApertura;
-const horaCierre = config.horaCierre;
-const intervalo = config.intervaloMinutos;
-
-  // Luego generas dinámicamente los días y horas con estos datos
-  // Ejemplo para generación de horarios:
-const horasDisponibles = [];
-const [hA, mA] = horaApertura.split(":").map(Number);
-const [hC, mC] = horaCierre.split(":").map(Number);
-  const aperturaMinutos = hA * 60 + mA;
-  const cierreMinutos = hC * 60 + mC;
-
-for (let min = aperturaMinutos; min <= cierreMinutos; min += intervalo) {
-    const hora = Math.floor(min / 60).toString().padStart(2, '0');
-    const minuto = (min % 60).toString().padStart(2, '0');
-    horasDisponibles.push(`${hora}:${minuto}`);
-}
-
-  // Aquí puedes llenar el contenedor con los botones u opciones de hora
-console.log(horasDisponibles);
-}
+        });
     
+        // Mostrar el último horario seleccionado en el resumen y actualizar input hidden
+        if (resumen.length > 0) {
+            const ultimo = resumen[resumen.length - 1];
+            if (displaySchedule) displaySchedule.textContent = ultimo;
+            if (hiddenSchedule) hiddenSchedule.value = ultimo;
+        } else {
+            if (displaySchedule) displaySchedule.textContent = 'No seleccionado';
+            if (hiddenSchedule) hiddenSchedule.value = '';
+        }
+    }
+    
+
+    function eliminarSeleccion(fecha, hora) {
+        const selecciones = JSON.parse(localStorage.getItem('seleccionesHorarios') || '{}');
+        selecciones[fecha] = selecciones[fecha].filter(h => h !== hora);
+        if (selecciones[fecha].length === 0) delete selecciones[fecha];
+
+        localStorage.setItem('seleccionesHorarios', JSON.stringify(selecciones));
+        actualizarListaSeleccionados();
+
+        if (fechaSeleccionada && fechaSeleccionada.toISOString().split('T')[0] === fecha) {
+            mostrarHorasParaDia(fechaSeleccionada);
+        }
+    }
+
 
