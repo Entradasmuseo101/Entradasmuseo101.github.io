@@ -32,14 +32,13 @@
 
     <!-- Texto del valor del ticket -->
     <script>
-const config = JSON.parse(localStorage.getItem('configuracion')) || {};
-const globalConfig = config.global || {};
-const price = parseInt(globalConfig.precioEntrada) || 20000;
-const maxPersonas = parseInt(globalConfig.maxPersonas) || 10;
+  const config = JSON.parse(localStorage.getItem('configuracion')) || {};
+const globalConfig = config.global || { precioEntrada: 25000, maxPersonas: 6 };
 
 document.addEventListener("DOMContentLoaded", () => {
     const input = document.getElementById("cantidadEntradas");
     const totalPago = document.getElementById("totalPago");
+
     const displayPersonCount = document.getElementById("displayPersonCount");
     const displayTotalPayment = document.getElementById("displayTotalPayment");
     const qrMonto = document.getElementById("qrMonto");
@@ -47,12 +46,13 @@ document.addEventListener("DOMContentLoaded", () => {
     function actualizarTotal() {
         const cantidad = parseInt(input.value) || 0;
         let personas = cantidad;
-        if (cantidad > maxPersonas) {
-            personas = maxPersonas;
-            input.value = maxPersonas;
+
+        if (cantidad > globalConfig.maxPersonas) {
+            personas = globalConfig.maxPersonas;
+            input.value = globalConfig.maxPersonas;
         }
 
-        const total = personas * price;
+        const total = personas * globalConfig.precioEntrada;
         totalPago.textContent = total.toLocaleString("es-CO");
 
         if (displayPersonCount) {
@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("input", actualizarTotal);
     actualizarTotal(); // cálculo inicial
 });
+
 
 // Puedes usar price y maxPersonas como desees
 </script>
@@ -243,6 +244,13 @@ document.addEventListener("DOMContentLoaded", () => {
         </script>
         
 
+        
+
+    
+    
+    <script src="./js/java.js"></script>
+</body>
+</html>
         
 
     
