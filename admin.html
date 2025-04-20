@@ -1,0 +1,229 @@
+<!-- admin.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <title>Administrador</title>
+    <style>
+        /* Diseño general */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+        }
+        .navbar {
+            margin-bottom: 2rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h2, h3 {
+            color: #333;
+            font-weight: bold;
+        }
+        .config-form input, .config-form button {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .config-form label {
+            font-weight: bold;
+        }
+        .config-dia {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .config-dia button {
+            margin-left: 0.5rem;
+        }
+        .configuracion-guardada {
+            margin-top: 2rem;
+        }
+        .alerta {
+            margin-top: 1rem;
+        }
+        .alerta .alert {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a class="navbar-brand d-flex align-items-center">
+                <img src="img/logo.png" alt="Logo" width="50px" class="me-2">
+                <span class="fs-5 fw-bold text-white">Administrar Horarios</span>
+            </a>
+            <a href="comprar-tickets.html" class="btn btn-secondary">Volver a la Página de Ventas</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5 pt-5">
+        <!-- Configuración de Horarios -->
+        <h2>Configurar Horarios por Día</h2>
+        <form id="configForm" class="config-form">
+            <div class="mb-3">
+                <label for="selectFecha" class="form-label">Selecciona un Día</label>
+                <input type="date" class="form-control" id="selectFecha" required>
+            </div>
+            <div class="mb-3">
+                <label for="horaApertura" class="form-label">Hora de Apertura</label>
+                <input type="time" class="form-control" id="horaApertura" value="08:00" required>
+            </div>
+            <div class="mb-3">
+                <label for="horaCierre" class="form-label">Hora de Cierre</label>
+                <input type="time" class="form-control" id="horaCierre" value="17:00" required>
+            </div>
+            <div class="mb-3">
+                <label for="intervalo" class="form-label">Intervalo entre horarios (minutos)</label>
+                <input type="number" class="form-control" id="intervalo" value="60" min="1" required>
+            </div>
+            <button type="button" class="btn btn-primary" id="guardarConfig">Guardar Configuración</button>
+        </form>
+
+        <!-- Configuración Global -->
+        <h2 class="mt-4">Configuración Precio Entradas</h2>
+        <form id="formAdmin" class="config-form">
+            <div class="mb-3">
+                <label for="precioEntrada" class="form-label">Precio de la entrada</label>
+                <input type="number" class="form-control" id="precioEntrada" value="25000" required>
+            </div>
+            <div class="mb-3">
+                <label for="maxPersonas" class="form-label">Máximo de personas por grupo</label>
+                <input type="number" class="form-control" id="maxPersonas" value="6" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar configuración</button>
+        </form>
+
+        <!-- Lista de configuraciones guardadas -->
+        <div class="configuracion-guardada">
+            <h3>Días Configurados</h3>
+            <div id="listaConfiguraciones"></div>
+        </div>
+    </div>
+
+    <script>
+        // Variables de la configuración
+        const form = document.getElementById("configForm");
+        const guardarBtn = document.getElementById("guardarConfig");
+        const fechaInput = document.getElementById('selectFecha');
+        const aperturaInput = document.getElementById('horaApertura');
+        const cierreInput = document.getElementById('horaCierre');
+        const intervaloInput = document.getElementById('intervalo');
+        const listaConfiguraciones = document.getElementById('listaConfiguraciones');
+
+        // Cargar las configuraciones guardadas
+        function cargarConfiguraciones() {
+            listaConfiguraciones.innerHTML = '';
+            const configuracion = JSON.parse(localStorage.getItem('configuracion')) || {};
+
+            const fechasOrdenadas = Object.keys(configuracion).sort();
+
+            if (fechasOrdenadas.length === 0) {
+                listaConfiguraciones.innerHTML = '<p>No hay días configurados aún.</p>';
+                return;
+            }
+
+            fechasOrdenadas.forEach(fecha => {
+                const conf = configuracion[fecha];
+                const contenedor = document.createElement('div');
+                contenedor.classList.add('config-dia');
+
+                contenedor.innerHTML = `
+                    <strong>${fecha}</strong><br>
+                    Apertura: ${conf.apertura} - Cierre: ${conf.cierre}<br>
+                    Intervalo: ${conf.intervalo} minutos
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-warning" onclick="editarConfiguracion('${fecha}')">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarConfiguracion('${fecha}')">Eliminar</button>
+                    </div>
+                `;
+                listaConfiguraciones.appendChild(contenedor);
+            });
+        }
+
+        // Editar configuración
+        function editarConfiguracion(fecha) {
+            const configuracion = JSON.parse(localStorage.getItem('configuracion')) || {};
+            const conf = configuracion[fecha];
+            if (conf) {
+                fechaInput.value = fecha;
+                aperturaInput.value = conf.apertura;
+                cierreInput.value = conf.cierre;
+                intervaloInput.value = conf.intervalo;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Eliminar configuración
+        function eliminarConfiguracion(fecha) {
+            const configuracion = JSON.parse(localStorage.getItem('configuracion')) || {};
+            delete configuracion[fecha];
+            localStorage.setItem('configuracion', JSON.stringify(configuracion));
+            cargarConfiguraciones();
+        }
+
+        // Guardar o actualizar configuración de un día
+        guardarBtn.addEventListener('click', () => {
+            const fechaSeleccionada = fechaInput.value;
+            const horaApertura = aperturaInput.value;
+            const horaCierre = cierreInput.value;
+            const intervalo = parseInt(intervaloInput.value);
+
+            if (!fechaSeleccionada || !horaApertura || !horaCierre || isNaN(intervalo)) {
+                alert("Por favor completa todos los campos correctamente.");
+                return;
+            }
+
+            const configuracion = JSON.parse(localStorage.getItem('configuracion')) || {};
+
+            configuracion[fechaSeleccionada] = {
+                apertura: horaApertura,
+                cierre: horaCierre,
+                intervalo: intervalo
+            };
+
+            localStorage.setItem("configuracion", JSON.stringify(configuracion));
+            alert('Configuración guardada con éxito');
+            cargarConfiguraciones();
+
+            // Limpiar campos
+            fechaInput.value = "";
+            aperturaInput.value = "08:00";
+            cierreInput.value = "17:00";
+            intervaloInput.value = "60";
+        });
+
+        // Cargar configuraciones al cargar la página
+        window.addEventListener("DOMContentLoaded", () => {
+            cargarConfiguraciones();
+        });
+
+        document.getElementById('formAdmin').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const precioEntrada = parseInt(document.getElementById('precioEntrada').value);
+    const maxPersonas = parseInt(document.getElementById('maxPersonas').value);
+
+    const configuracion = {
+        global: {
+            precioEntrada: precioEntrada,
+            maxPersonas: maxPersonas
+        }
+    };
+
+    localStorage.setItem('configuracion', JSON.stringify(configuracion));
+    alert('Configuración guardada exitosamente');
+});
+
+    </script>
+    
+</body>
+</html>
