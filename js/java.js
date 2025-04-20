@@ -13,11 +13,8 @@
         
 
         
-        // Obtener configuración desde localStorage
-        const config = JSON.parse(localStorage.getItem('configuracionEntradas')) || {
-            precioEntrada: 15000,
-            maximoPersonas: 6
-        };
+    const config = JSON.parse(localStorage.getItem('configuracionEntradas')) || {};
+    const globalConfig = config.global || { precioEntrada: 25000, maxPersonas: 6 };
     
         // Establecer el máximo dinámico
         personCountInput.setAttribute('max', config.maximoPersonas);
@@ -104,6 +101,7 @@ if (emailInput && replyToInput) {
     });
 
     function mostrarMeses() {
+        limpiarSeleccionesExpiradas();
         mesesContainer.innerHTML = '';
         diasContainer.classList.add('oculto');
         horasContainer.classList.add('oculto');
@@ -160,34 +158,51 @@ if (emailInput && replyToInput) {
         horasContainer.classList.remove('oculto');
         const fechaKey = fecha.toISOString().split('T')[0];
         tituloDia.textContent = `Horas disponibles para ${fechaKey}`;
-
+    
         const configuraciones = JSON.parse(localStorage.getItem("configuracion") || "{}");
         const configDia = {
             apertura: (configuraciones[fechaKey]?.apertura) || configuraciones.apertura || "08:00",
             cierre: (configuraciones[fechaKey]?.cierre) || configuraciones.cierre || "18:00",
             intervalo: parseInt(configuraciones[fechaKey]?.intervalo || configuraciones.intervalo) || 10
         };
-
+    
         const horas = generarHoras(configDia.apertura, configDia.cierre, configDia.intervalo);
-        const selecciones = JSON.parse(localStorage.getItem('seleccionesHorarios') || '{}');
-        const seleccionadas = selecciones[fechaKey] || [];
+        let selecciones = JSON.parse(localStorage.getItem('seleccionesHorarios') || '{}');
+        const ahora = new Date().getTime();
+const seleccionadas = (selecciones[fechaKey] || []).filter(item => {
+    return ahora - item.timestamp < 24 * 60 * 60 * 1000; // solo las que no han caducado
+});
 
+    
+        // Limpiar selecciones caducadas si las había
+        if (selecciones[fechaKey]?.length !== seleccionadas.length) {
+            selecciones[fechaKey] = seleccionadas;
+            if (selecciones[fechaKey].length === 0) delete selecciones[fechaKey];
+            localStorage.setItem('seleccionesHorarios', JSON.stringify(selecciones));
+        }
+    
         horas.forEach(hora => {
             const horaDiv = document.createElement('div');
             horaDiv.classList.add('item');
             horaDiv.textContent = hora;
-
-            if (seleccionadas.includes(hora)) {
+    
+            if (seleccionadas.some(sel => sel.hora === hora)) {
                 horaDiv.classList.add('seleccionado');
             }
-
+    
             horaDiv.addEventListener('click', () => {
                 alternarSeleccion(horaDiv, fechaKey);
             });
-
+    
             horasGrid.appendChild(horaDiv);
+
+            if (seleccionadas.some(sel => sel.hora === hora)) {
+                horaDiv.classList.add('seleccionado');
+            }
+            
         });
     }
+    
 
     function generarHoras(inicio, fin, intervaloMin) {
         const horarios = [];
@@ -205,34 +220,33 @@ if (emailInput && replyToInput) {
 
         return horarios;
     }
-
     function alternarSeleccion(horaDiv, fechaKey) {
         const hora = horaDiv.textContent;
         const selecciones = JSON.parse(localStorage.getItem('seleccionesHorarios') || '{}');
     
+        // Inicializar el array si no existe
         if (!selecciones[fechaKey]) selecciones[fechaKey] = [];
     
-        if (horaDiv.classList.contains('seleccionado')) {
-            // Deseleccionar
-            horaDiv.classList.remove('seleccionado');
-            selecciones[fechaKey] = selecciones[fechaKey].filter(h => h !== hora);
-            // Limpiar campos si no hay selección
-            document.getElementById('hiddenSchedule').value = '';
-            document.getElementById('displaySchedule').textContent = 'No seleccionado';
-        } else {
-            // Solo permitir una selección
-            document.querySelectorAll('#horasGrid .item.seleccionado').forEach(el => el.classList.remove('seleccionado'));
-            selecciones[fechaKey] = [hora];
+        // Verificar si ya se había seleccionado esta hora
+        const yaSeleccionada = selecciones[fechaKey].some(item => item.hora === hora);
+    
+        if (!yaSeleccionada) {
+            // Agregar nueva selección con marca de tiempo actual
+            selecciones[fechaKey].push({
+                hora: hora,
+                timestamp: new Date().getTime()
+            });
+    
+            // Marcar visualmente como seleccionado
             horaDiv.classList.add('seleccionado');
     
-            // Actualizar campos ocultos y visibles
-            const fechaHoraStr = `${fechaKey} a las ${hora}`;
-            document.getElementById('hiddenSchedule').value = fechaHoraStr;
-            document.getElementById('displaySchedule').textContent = fechaHoraStr;
+            // Guardar cambios
+            localStorage.setItem('seleccionesHorarios', JSON.stringify(selecciones));
         }
     
-        localStorage.setItem('seleccionesHorarios', JSON.stringify(selecciones));
+        actualizarListaSeleccionados();
     }
+    
     
 
     function actualizarListaSeleccionados() {
@@ -289,5 +303,28 @@ if (emailInput && replyToInput) {
             mostrarHorasParaDia(fechaSeleccionada);
         }
     }
+
+    function limpiarSeleccionesExpiradas() {
+        const selecciones = JSON.parse(localStorage.getItem('seleccionesHorarios') || '{}');
+        const ahora = new Date().getTime();
+        let huboCambios = false;
+    
+        for (let fecha in selecciones) {
+            selecciones[fecha] = selecciones[fecha].filter(item => {
+                const valido = ahora - item.timestamp < 24 * 60 * 60 * 1000;
+                if (!valido) huboCambios = true;
+                return valido;
+            });
+            if (selecciones[fecha].length === 0) {
+                delete selecciones[fecha];
+                huboCambios = true;
+            }
+        }
+    
+        if (huboCambios) {
+            localStorage.setItem('seleccionesHorarios', JSON.stringify(selecciones));
+        }
+    }
+    
 
 
