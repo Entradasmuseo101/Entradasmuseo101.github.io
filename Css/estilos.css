@@ -84,12 +84,14 @@
 -------------------------------------------------- */
 
 .bg-aside1 {
-    background: #333a40;
-    padding: 8rem;
-  }
+  background: #333a40;
+  padding: 8rem;
+}
 
-  /* FORM COMPRAR TICKETS
+/* FORM COMPRAR TICKETS
 -------------------------------------------------- */
+
+
 
 #totalPago {
     font-size: 1.4rem;
@@ -114,3 +116,28 @@
   @media (min-width: 992px) {
     #main-footer .nav-link span { display: block; }
   }
+  
+  .temas span {
+    display: inline-block;
+    margin: 5px 10px;
+    background-color: #0a1010;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+
+  .volver-btn {
+    display: inline-block;
+    background-color: #ff6347; /* Color de fondo */
+    color: white; /* Color del texto */
+    font-size: 18px; /* Tamaño de la fuente */
+    padding: 10px 20px; /* Espaciado interno */
+    text-decoration: none; /* Quitar subrayado */
+    border-radius: 5px; /* Bordes redondeados */
+    text-align: center; /* Centrar el texto */
+    cursor: pointer; /* Cambiar el cursor al pasar el ratón */
+    transition: background-color 0.3s ease; /* Transición suave para el color de fondo */
+}
+
+.volver-btn:hover {
+    background-color: #ff4500; /* Color al pasar el ratón */
+}
