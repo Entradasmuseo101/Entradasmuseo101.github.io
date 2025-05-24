@@ -22,6 +22,8 @@
     cursor: pointer;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
+
+  
   
   .btn-compra-tickets:hover {
     transform: scale(1.05);
@@ -85,8 +87,13 @@
 -------------------------------------------------- */
 
 .bg-aside1 {
-  background: #333a40;
-  padding: 8rem;
+  background: #0462b3;
+  padding: 2rem;
+  max-width: 100%;
+  width: auto;
+  word-wrap: break-word;
+  box-sizing: border-box;
+  color: white;
 }
 
 /* FORM COMPRAR TICKETS
@@ -233,12 +240,95 @@
 
 
 .temas-texto {
-  column-count: 3;          /* 3 columnas */
-  column-gap: 8px;          /* separación entre columnas (puedes cambiar a 2px) */
+  column-count: 3;
+  column-gap: 8px;
   font-size: 1rem;
-  color: #fff;              /* blanco para fondo oscuro */
+  color: #fff;
   line-height: 1.5;
   max-width: 600px;
   margin: 0 auto;
   user-select: none;
+  padding-right: 40px; /* o el valor que prefieras */
+}
+
+
+
+.contenedor-flex {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.contenedor-flex {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.contenedor-flex {
+  display: flex;
+  flex-direction: row; /* Siempre en fila, incluso en móviles */
+  width: 100%;
+  align-items: center;
+}
+
+/* Texto a la izquierda, ocupa todo el espacio disponible */
+.contenedor-texto {
+  height: 300px; /* Mantiene altura fija en pantallas grandes */
+  flex: 1;
+  padding: 2rem;
+  background: #27455f;
+  color: white;
+  box-sizing: border-box;
+  justify-content: center;
+  font-size: 1.5em;
+  overflow-y: auto; /* Agrega scroll vertical si el contenido se desborda */
+}
+
+/* Vista en pantallas pequeñas: permite que el contenedor crezca */
+@media (max-width: 768px) {
+  .contenedor-texto {
+    height: auto; /* Elimina la altura fija */
+    max-height: 80vh; /* Opcional: para mantener límite visible */
+  }
+}
+
+/* Imagen a la derecha, con ancho fijo */
+.contenedor-imagen {
+  flex: 0 0 auto;
+  padding: 1rem;
+}
+
+.unete-img {
+  width: 180px; /* O ajusta a tu necesidad */
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Quitar comportamiento responsivo que apila */
+@media (max-width: 768px) {
+  .contenedor-flex {
+    flex-direction: row; /* Sigue en fila incluso en móvil */
+  }
+
+  .contenedor-texto,
+  .contenedor-imagen {
+    width: auto;
+  }
+}
+
+@media (min-width: 992px) {
+  a.btn-success.ms-2.mb-3 {
+    background: linear-gradient(135deg, #bcca1d9f, #0d6965); /* degradado cálido */
+    color: white !important;
+    /* NO tocar padding ni font-size para conservar el tamaño original */
+    font-weight: bold;
+    border: none;
+    border-radius: 0.8rem;
+    box-shadow: 0 4px 10px rgba(8, 213, 4, 0.658);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-shadow: 0 1px 2px rgba(10, 149, 144, 0.895);
+  }
 }
